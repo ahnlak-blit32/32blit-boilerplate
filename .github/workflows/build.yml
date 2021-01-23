@@ -26,7 +26,7 @@ jobs:
             name: Linux
             release-suffix: LIN64
             cmake-args: -D32BLIT_PATH=$GITHUB_WORKSPACE/32blit
-            apt-packages: libsdl2-dev libsdl2-image-dev python3-setuptools
+            apt-packages: libsdl2-dev libsdl2-image-dev libsdl2-net-dev python3-setuptools
 
           - os: ubuntu-20.04
             name: STM32
@@ -38,7 +38,7 @@ jobs:
             name: macOS
             release-suffix: MACOS
             cmake-args: -D32BLIT_PATH=$GITHUB_WORKSPACE/32blit
-            brew-packages: sdl2 sdl2_image
+            brew-packages: sdl2 sdl2_image sdl2_net
 
           - os: windows-latest
             name: Visual Studio
@@ -93,7 +93,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/main/build
-      run: cmake $GITHUB_WORKSPACE/main -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=`pwd` ${{matrix.cmake-args}}
+      run: cmake $GITHUB_WORKSPACE/main -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCPACK_PACKAGE_FILE_NAME=${{env.RELEASE_FILE}} ${{matrix.cmake-args}}
 
     # And then run the build itself
     - name: Build
@@ -108,9 +108,7 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/main/build
       run: |
-        cmake --build . --target install
-        tar -zcf ${RELEASE_FILE}.tar.gz bin/
-        7z a ${RELEASE_FILE}.zip bin/*
+        cmake --build . --target package
 
     # Push the tar file to the release
     - name: Upload tar
